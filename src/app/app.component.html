@@ -1,0 +1,42 @@
+<div style="top: 0px; left: 0px; z-index: 10; position: relative; background-color: #ddeeff; height:60px" class="boxed">
+        <div style="text-align:center; position: absolute; left: 20px; top: -30px">
+                <div style="display: inline-block; text-align:left"><img src="assets/squarelogo.ico" style="width: 40px; height: 40px"></div>
+                <div style="display: inline-block; text-align:left">
+                <h1 style="font-size: 1.58cm; font: sans; font-variant: small-caps">
+                Matcalc
+                </h1>
+                </div>
+        </div>
+</div>
+
+<div style="float: left">
+<div id="matrixList" class="boxed" style="float: left">
+  <strong>Matrices</strong>
+  <br />
+</div>
+<div class="boxed" style="float: left">
+  <div>
+      <input id = "row" type = "text" maxlength="4" size="1">
+      by
+      <input id = "col" type = "text" maxlength="4" size="1">
+      &#8594;
+      <button id = "button" onclick = "newMatrix()"> New Matrix </button>
+      <div id = "cutoff">
+          <div id = "matrix">
+              <br />
+          </div>
+      </div>
+  </div>
+    <div>
+        <br />
+        <input id = "stuff" size="10">
+        <br />
+        <button id = "calc" onlick = "displayCalc()"> Calculate </button>
+    </div>
+</div>
+</div>
+
+<div style="float: left" id="business" class="boxed">
+</div>
+
+<router-outlet></router-outlet>
