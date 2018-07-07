@@ -6,13 +6,17 @@
       var row;
       var col;
 
+      function helpMsg(){
+        document.getElementById("matoutput").innerHTML = document.getElementById("matoutput").innerHTML + "Type 'help' for help. \n \n";
+      }
+
       function saveMatrix(event) {
             matrixCount++;
             var mat = [];
 
-            for (i=1; i < row+1; i++){
-              for (j=1; j < col+1; j++){
-                var index = (j-1)+(row-1)*(i-1);
+            for (i=0; i < row; i++){
+              for (j=0; j < col; j++){
+                var index = j+col*i;
                 if (document.getElementById("r"+i+"c"+j).value == "")
                 {
                   mat[index] = "0";
@@ -22,6 +26,10 @@
                 }
               }
             }
+
+            mat[row*col] = row;
+            mat[row*col+1] = col;
+            //what?????????????????????
 
             sessionStorage.setItem("A"+matrixCount, JSON.stringify(mat));
             
@@ -34,57 +42,685 @@
 
             //maybe generate new var for matrix name
 
-            //document.getElementById("r"+1+"c"+1).value = JSON.parse(sessionStorage.getItem("A1"))[1];
-            document.getElementById("r"+1+"c"+1).value = document.getElementById("r"+1+"c"+2).value;
-
       };
 
       function matrixAdd(A,B){
-        var C = [];
-        
-        for (i=0; i<2; i++){
-          for (j=0; j<2; j++){
-            var index = (j-1)+(row-1)*(i-1);
-            C[index] = parseFloat(A[index]+B[index]);
+        if (isNaN(A) == false && isNaN(B) == false){
+          var C = A + B;
+        }
+        else{
 
+        
+        if (A[A.length -1] != B[B.length-1] || A[A.length-2] != B[B.length-2]){
+          document.getElementById("matoutput").innerHTML = document.getElementById("matoutput").innerHTML + "Matrix dimension mismatch."+"\n"+"\n";
+          stop;
+        }
+        else{
+          var C = [];
+        
+          for (i=0; i<A[A.length-2]; i++){
+            for (j=0; j<A[A.length-1]; j++){
+              var index = j+A[A.length-1]*i;
+              C[index] = parseFloat(A[index])+parseFloat(B[index]);
           }
+        }
+        C[B[B.length-1]*B[B.length-2]] = B[B.length-2];
+        C[B[B.length-1]*B[B.length-2]+1] = B[B.length-1]; 
+
+        }
+
+        //change index to +0, +1 for everything or else have empty entry.
         }
 
         return C;
+        
 
-        //make if split with + and -, just add neg values for -
+        //make if split with + and -, just add neg values for -?
       }
 
-      function matrixMult(){
-      }
+      function matrixSub(A,B){
+        if (isNaN(A) == false && isNaN(B) == false){
+          var C = A - B;
+        }
+        else{
 
-      function parseCalc(){
-        if (document.getElementById("stuff").innerHTML == "A1 + A2"){
-          var output = matrixAdd(JSON.parse(sessionStorage.getItem("A1")),JSON.parse(sessionStorage.getItem("A2")));
+        
+        var C = [];
+
+        if (A[A.length -1] != B[B.length-1] || A[A.length-2] != B[B.length-2]){
+          document.getElementById("matoutput").innerHTML = document.getElementById("matoutput").innerHTML + "Matrix dimension mismatch."+"\n"+"\n";
+          stop;
         }
 
-        return output;
+        else if (A){
+          for (i=0; i<A[A.length-2]; i++){
+            for (j=0; j<A[A.length-1]; j++){
+              var index = j+A[A.length-1]*i;
+              C[index] = parseFloat(A[index])-parseFloat(B[index]);
+
+              //could just add shit willy nilly no index, same w add
+            }
+          }
+        }
+
+        // else{
+        //   for (i=0; i<B.length-2; i++){
+        //     C[i] = -parseFloat(B[i]);
+        //   }
+        // }
+
+        C[B[B.length-1]*B[B.length-2]] = B[B.length-2];
+        C[B[B.length-1]*B[B.length-2]+1] = B[B.length-1]; 
+
+        }
+
+        return C;
+        }
+
+        //make if split with + and -, just add neg values for -?
+        //instantiate C within loops so i dont just have an empty matrix off the bat?
+
+      function parseAdd(matinput){
+        var currPos = 0;
+            var nextPos = 0;
+            if (matinput.charAt(0) == "-"){
+              currPos++;
+              nextPos++;
+            }
+            var result;
+
+            while(nextPos >= 0){
+              plus = matinput.indexOf("+",currPos);
+              minus = matinput.indexOf("-",currPos);
+              var summand = [];
+              
+              if (minus == -1 && plus != -1){
+                nextPos = plus;
+                //could maybe do in 2 moves
+              }
+              else if (minus != -1 && plus == -1){
+                nextPos = minus;
+              }
+              else{
+                nextPos = Math.min(plus,minus);
+              }
+
+              if (nextPos == -1){
+                summand = parseMult(matinput.substring(currPos))
+              }
+              else{
+                summand = parseMult(matinput.substring(currPos,nextPos))
+                //finding next summand
+              }
+              if (result === undefined){
+                if (matinput.charAt(0) == "-"){
+                  result = summand;
+                  if (isNaN(summand) == false){
+                    result *= -1;
+                  }
+                  else{
+                    for (i = 0; i < result.length - 2; i++){
+                      result[i] *= -1;
+                    }
+                  }
+                  //document.getElementById("matoutput").innerHTML = document.getElementById("matoutput").innerHTML + result;
+                }
+                else{
+                  result = summand;
+                }
+              }
+              else{
+                if (matinput.charAt(currPos-1) == "+"){
+                  result = matrixAdd(result,summand);
+                }
+                else if (matinput.charAt(currPos-1) == "-"){
+                  result = matrixSub(result,summand);
+                  //deal with - at start case
+                }
+              }
+              //adding summand or keeping em still -- could do if(result) then else for readability
+                
+                currPos = nextPos+1;
+              }
+            return result;
+      }
+
+      function matrixMult(A,B){
+        if (isNaN(A) == false && isNaN(B) == false){
+          var C = parseFloat(A)*parseFloat(B);
+        }
+        else if (isNaN(A) == false){
+          var C = B;
+          for (i = 0; i < B.length - 2; i++){
+            C[i] = parseFloat(A)*C[i];
+          }
+          //maybe don't use a new var
+        }
+        else if (isNaN(B) == false){
+          var C = A;
+          for (i=0; i < A.length - 2; i++){
+            C[i] = parseFloat(B)*C[i];
+          }
+        }
+        else{
+      
+        if (A[A.length-1] != B[B.length-2]){
+          document.getElementById("matoutput").innerHTML = document.getElementById("matoutput").innerHTML + "Matrix dimension mismatch."+"\n"+"\n";
+          stop;
+        }
+        else{
+          var C = [];
+          for (i=0; i < B[B.length-1]; i++){
+            for (j=0; j < A[A.length-2]; j++){
+              var index = i+B[B.length-1]*j;
+              var sum = 0;
+              for (k=0; k < B[B.length-2]; k++){
+                sum = sum + B[i+B[B.length-1]*k]*A[k+A[A.length-1]*j];
+              }
+              C[index] = sum;
+            }
+          }
+          //figure out how i made the other matrices, run for loop to make indiv entries, tack on row and col at end
+          //row first matrix, col second matrix
+          //fix row/col check bc does variant of kronecker product rn
+        }
+        C[B[B.length-1]*A[A.length-2]] = A[A.length-2];
+        C[B[B.length-1]*A[A.length-2]+1] = B[B.length-1]
+
+        }
+        return C;
+      }
+      //replace lengths with vars
+
+      function parseMult(matinput){
+        // var factors = term.split("*");
+        // var product = JSON.parse(sessionStorage.getItem(factors[0]))
+
+        // for (i=1; i < factors.length; i++){
+        //   product = matrixMult(product,JSON.parse(sessionStorage.getItem(factors[i])));
+        // }
+
+        var currPos = 0;
+        var nextPos = 0;
+        var product;
+
+        while(nextPos >= 0){
+          nextPos = matinput.indexOf("*",currPos);
+          var term = [];
+
+          if (nextPos == -1){
+            try{
+              term = eval(matinput.substring(currPos));
+            }
+            catch{
+              term = JSON.parse(sessionStorage.getItem(matinput.substring(currPos)));
+            }
+          }
+          else{
+            try{
+              term = eval(matinput.substring(currPos,nextPos));
+            }
+            catch{
+              term = JSON.parse(sessionStorage.getItem(matinput.substring(currPos,nextPos)));
+            }
+            //finding next summand
+          }
+          if (product === undefined){
+            product = term;
+          }
+          else{
+            product = matrixMult(product,term);
+          }
+                
+          currPos = nextPos+1;
+        }
+
+        return product;
+      }
+
+      function printCalc(A){
+        var matoutput = document.getElementById("matoutput");
+        if (isNaN(A) == false){
+          A = Math.round(A*1000)/1000;
+          matoutput.innerHTML = matoutput.innerHTML + A + "\n";
+        }
+        else{
+          var max_length=0;
+
+        for (i=0;i<A.length-2;i++){
+          A[i] = Math.round(A[i]*1000)/1000;
+          var num_string = A[i].toString();
+
+          if (num_string.length > max_length){
+            max_length = num_string.length;
+          }
+        }
+
+        for (i=0; i<A[A.length-2]; i++){
+            for (j=0; j<A[A.length-1]; j++){
+              var index = j+A[A.length-1]*i;
+              
+              matoutput.innerHTML = matoutput.innerHTML + A[index] + "  ";
+              for (k=A[index].toString().length; k<max_length; k++){
+                matoutput.innerHTML = matoutput.innerHTML + " ";
+              }
+          }
+          matoutput.innerHTML = matoutput.innerHTML + "\n";
+        }
+
+        }
+
+        matoutput.innerHTML = matoutput.innerHTML + "\n";
 
         //this is going to be annoying user input stuff
         //cannot have more than one calculation per line
         //display matrices with text?
       }
 
-      function displayCalc(event){
+      function validParen(matinput){
+        var valid = true;
 
-            var bum = document.createElement("input");
-            var business = document.getElementById("business");
+        if (matinput.split("(").length != matinput.split(")").length){
+          valid = false;
+        }
+        else{
+          var left = 0;
+          var right = 0;
 
-            business.appendChild(bum);
-            //bum.value = JSON.parse(sessionStorage.getItem("A1"))[1];
+          for (i=0; i < matinput.length; i++){
+            if (matinput.charAt(i)=="("){
+              left++;
+            }
+            else if (matinput.charAt(i)==")"){
+              right++;
+            }
+            if (left < right){
+              valid = false;
+              break;
+            }
+          }
+        }
 
-          var linebreak = document.createElement("br");
-          document.getElementById("business").appendChild(linebreak);
+        return valid;
+        //could get rid of valid and have default to true?
+        //don't allow ()
+      }
+
+      function parseExp(matinput){
+
+      }
+
+      function transpose(A){
+        var A_transp = [];
+        var m = A[A.length-2];
+        var n = A[A.length-1];
+
+        for (i=0;i<n;i++){
+          for (j=0;j<m;j++){
+            A_transp[j+i*m] = A[i+j*n];
+          }
+        }
+        A_transp.push(A[A.length-1]);
+        A_transp.push(A[A.length-2]);
+
+        return A_transp;
+
+      }
+
+      function parenParse(matinput){
+        if (validParen(matinput)){
+          window.parens = [];
+          var pos = matinput.indexOf("(");
+          var runThru = matinput.split("(").length - 1;
+          for (loop_index =0; loop_index < runThru; loop_index++){
+            var simplified = false;
+            
+            while (simplified == false){
+              if (matinput.indexOf(")",pos) > matinput.indexOf("(",pos+1) && matinput.indexOf("(",pos+1) != -1){
+                pos = matinput.indexOf("(",pos+1);
+              }
+              else{
+                //document.getElementById("matoutput").innerHTML = document.getElementById("matoutput").innerHTML + matinput.substring(pos+1,matinput.indexOf(")",pos)) + "\n";
+                //the loop indices fuck with other functions' loop indices??? very weird--perhaps a product of window. -- makes this entire process global??
+                var replace = "parens[" + loop_index + "]";
+                if (matinput.substring(pos-3,pos)==="det"){
+                  parens[loop_index] = determinant(parseAdd(matinput.substring(pos+1,matinput.indexOf(")",pos))));
+                  matinput = matinput.substring(0,pos-3) + replace + matinput.substring(matinput.indexOf(")",pos)+1);
+                }
+                else if (matinput.substring(pos-3,pos)==="inv"){
+                  parens[loop_index] = inverseMat(parseAdd(matinput.substring(pos+1,matinput.indexOf(")",pos))));
+                  matinput = matinput.substring(0,pos-3) + replace + matinput.substring(matinput.indexOf(")",pos)+1);
+                }
+                else if (matinput.substring(pos-4,pos)==="save"){
+                  saveInput(parseAdd(matinput.substring(pos+1,matinput.indexOf(")",pos))));
+                  return false; //use return false??
+                }
+                else if (matinput.substring(pos-4,pos)==="sqrt"){
+                  parens[loop_index] = Math.sqrt(parseAdd(matinput.substring(pos+1,matinput.indexOf(")",pos))));
+                  matinput = matinput.substring(0,pos-4) + replace + matinput.substring(matinput.indexOf(")",pos)+1);
+                }
+                else{
+                  parens[loop_index] = parseAdd(matinput.substring(pos+1, matinput.indexOf(")",pos)));
+                  matinput = matinput.substring(0,pos) + replace + matinput.substring(matinput.indexOf(")",pos)+1);
+                }
+
+                simplified = true;
+                pos = matinput.indexOf("(");
+              }
+            }
+          }
+          var result = parseAdd(matinput);
+          return result;
+        }
+        else{
+          return "Improper syntax." + "\n \n";
+        }
+      }
+
+      function luDecomp(A){
+        var outer_prod = [];
+        var n = A[A.length-2];
+
+        for (iter=1;iter<n;iter++){
+          var multipliers = [];
+          var outer_row = [];
+          //document.getElementById("matoutput").innerHTML = document.getElementById("matoutput").innerHTML + iter + "\n \n";
+
+          for (l=iter; l<n; l++){
+            A[iter-1+l*n] = parseFloat(A[iter-1+l*n])/parseFloat(A[iter-1+(iter-1)*n]);
+            //document.getElementById("matoutput").innerHTML = document.getElementById("matoutput").innerHTML + A[iter-1+l*n] + "\n \n";
+            multipliers.push(A[iter-1+l*n]);
+            outer_row.push(A[(iter-1)*n+l]);
+          }
+          multipliers.push(n-iter,1);
+          outer_row.push(1,n-iter);
+
+          outer_prod = matrixMult(multipliers,outer_row);
+          //document.getElementById("matoutput").innerHTML = document.getElementById("matoutput").innerHTML + outer_prod + "\n \n";
+
+          for (j=0; j < n-iter; j++){
+            for (k=0; k < n-iter; k++){
+              //document.getElementById("matoutput").innerHTML = document.getElementById("matoutput").innerHTML + A[(iter+j)*n+(iter+k)] + "\n \n";
+              A[(iter+j)*n+(iter+k)] = parseFloat(A[(iter+j)*n+(iter+k)])-parseFloat(outer_prod[j*(n-iter)+k]);
+            }
+          }
+          //printCalc(A);
+        }
+        return A;
+
+      }
+      //add thing in parenparser that focuses just on decompositions, reg exp searcher
+      //check for square in parenParse or displayCalc or w/e
+
+      function luSplit(A){
+        var result = [];
+        var ell = [];
+        var yoo = [];
+        A = luDecomp(A);
+        var n = A[A.length-2];
+        
+        for (i=0;i<n;i++){
+          ell[i+i*n] = 1;
+          yoo[i+i*n] = A[i+i*n];
+        }
+
+        for (i=0;i<n;i++){
+          for (j=i+1;j<n;j++){
+            ell[i+j*n] = A[i+j*n];
+            ell[j+i*n] = 0;
+
+            yoo[i+j*n] = 0;
+            yoo[j+i*n] = A[j+i*n];
+          }
+        }
+
+        ell.push(n,n);
+        yoo.push(n,n);
+        result[0] = ell;
+        result[1] = yoo;
+        return result;
+        
+      }
+
+      function partialPivot(A){
+        var result = [];
+        var switchRow;
+        var current;
+        var biggest = 0;
+        var row_val = A[A.length-2];
+        var col_val = A[A.length-1];
+        for (i=0; i < row_val; i++){
+          current = Math.abs(A[i*col_val]);
+          if (current > biggest){
+            biggest = current;
+            switchRow = i;
+          }
+        }
+
+      }
+
+      function determinant(A){
+        var result = 1;
+        var decomp = luDecomp(A);
+        for (p=0;p<decomp[decomp.length-2];p++){
+          result = result*decomp[p+p*A[A.length-2]];
+        }
+        return result;
+
+      }
+
+      function fwdSub(A,b){
+        var n = A[A.length-2];
+        var lead_zeros=false;
+        var zero_pos=0;
+
+        for (i=0;i<n;i++){
+          if (parseFloat(b[i])==0){
+            zero_pos++;
+          }
+          else{
+            break;
+          }
+        }
+
+        for (i=zero_pos;i<n;i++){
+          for (j=0;j<i;j++){
+            b[i] = parseFloat(b[i])-parseFloat(A[j+i*n])*parseFloat(b[j]);
+          }
+          b[i] = parseFloat(b[i])/parseFloat(A[i+i*n]);
+        } 
+
+        return b;
+
+      }
+
+      function backSub(A,b){
+        var n = A[A.length-2];
+        var lead_zeros=false;
+        var zero_pos=n-1;
+
+        for(i=n-1;i>-1;i--){
+          if (parseFloat(b[i]) ==0){
+            zero_pos--;
+          }
+          else{
+            break;
+          }
+        }
+
+        for (i=zero_pos;i>-1;i--){
+          for (j=n-1;j>i;j--){
+            b[i] = parseFloat(b[i])-parseFloat(A[j+i*n])*parseFloat(b[j]);
+          }
+          b[i] = parseFloat(b[i])/parseFloat(A[i+i*n]);
+        }
+
+        return b;
+
+      }
+      //if statement to skip mult by zero?
+
+      function systemSolve(A,b){
+        var decomp = luSplit(A);
+        return backSub(decomp[1],fwdSub(decomp[0],b));
+        //replace with algo not using two matrices
+
+      }
+
+      function inverseMat(A){
+        //document.getElementById("matoutput").innerHTML = document.getElementById("matoutput").innerHTML + A + "\n";
+        var decomp = luSplit(A);
+        var det = 1;
+
+        for (i=0;i<n;i++){
+          det = det*parseFloat(decomp[1][i]);
         }
 
 
+        if (det==0){
+          document.getElementById("matoutput").innerHTML = document.getElementById("matoutput").innerHTML + "Matrix not invertible.";
+          stop;
+          //return "Matrix not invertible."; //make parenParse return errors like this.
+        }
+        else{
+          var n = A[A.length-2];
+          //document.getElementById("matoutput").innerHTML = document.getElementById("matoutput").innerHTML + decomp[0] + "    " + decomp[1] + "\n";
+          //document.getElementById("matoutput").innerHTML = document.getElementById("matoutput").innerHTML + matrixMult(decomp[0],decomp[1]) + "\n";
+          //document.getElementById("matoutput").innerHTML = document.getElementById("matoutput").innerHTML + luSplit(parenParse("A1"))[0] + "    " + luSplit(parenParse("A1"))[1] + "\n";
 
-        //display calculations, can separate with some delimiter that induces line break
+          var ident_col=[];
+
+          for (k=0;k<n;k++){
+            //document.getElementById("matoutput").innerHTML = document.getElementById("matoutput").innerHTML + ident_col + "\n";
+            for (l=0;l<n;l++){
+              ident_col.push(0);
+            }
+            ident_col[k] = 1;
+            //could just switch two vals every time
+            
+            ident_col = backSub(decomp[1],fwdSub(decomp[0],ident_col));
+
+            for (l=0;l<n;l++){
+              A[k+l*n] = ident_col[l];
+            }
+            ident_col = [];
+          }
+          return A;
+        }
+
+      }
+
+      function cholesky(A){
+        
+      }
+
+      function isSPD(A){
+
+      }
+
+      function qrFact(A){
+
+      }
+
+      // function triCheck(A){
+      //   var result = true;
+      //   var n = A[A.length-2];
+
+      //   for (i=){
+      //     if (){
+      //       result = false;
+      //       break;
+      //     }
+      //   }
+
+      //   if (result == false){
+      //     result = true;
+
+      //     for (i=){
+      //       if (){
+      //         result = false;
+      //         break;
+      //       }
+      //     }
+      //   }
+
+      //   return result;
+      // }
+
+      function eigenval(A){
+        var eigvals = [];
+        var n = A[A.length-2];
+
+
+        if (triCheck(A) == true){
+          for (i=0;i<n;i++){
+            eigvals[i] = A[i+i*n];
+          }
+
+        }
+
+        return eigvals;
+
+      }
+      
+      function eigenvec(A){
+
+      }
+
+      function saveInput(A){
+        matrixCount++;
+
+        sessionStorage.setItem("A"+matrixCount, JSON.stringify(A));
+            
+        var listMatrix = document.createElement("div");
+        document.getElementById("matrixList").appendChild(listMatrix);
+        listMatrix.innerHTML = "A"+matrixCount;
+        listMatrix.classList.add("box");
+
+      }
+
+      function displayCalc(event){
+            var matinput = document.getElementById("matinput").value;
+            var matoutput = document.getElementById("matoutput");
+
+            if (matinput == "clear"){
+              matoutput.innerHTML = "";
+              matoutput.scrollTop = matoutput.scrollHeight;
+              return;
+              //case-sensitive?
+            }
+            else if (matinput == "help"){
+              matoutput.innerHTML = matoutput.innerHTML + "- Use * to multiply. Make sure to wrap fractions in parentheses. Don't have two operations next to\n  each other (e.g. 'A*-B'). \n- det() for determinant \n- inv() for inverse \n- lu() for LU decomposition (w/ partial pivoting) \n- solve(A,b) to solve system Ax=b \n- save() to save matrix between parentheses \n- 'clear' to clear output box \n \n";
+              matoutput.scrollTop = matoutput.scrollHeight;
+              return;
+            }
+            else if (matinput.search("lu") == 0){
+              var decomp = luSplit(parenParse(matinput.substring(3,matinput.length-1)));
+
+              printCalc(decomp[0]);
+              printCalc(decomp[1]);
+
+              matoutput.scrollTop = matoutput.scrollHeight;
+            }
+            else{
+
+            //parenParse(matinput);
+            //matoutput.innerHTML = matoutput.innerHTML + parens[0] + parenParse(matinput) + "\n \n";
+            if (parenParse(matinput) == null){
+              matoutput.innerHTML = matoutput.innerHTML + "Invalid expression. \n \n";
+            }
+            else{
+              printCalc(parenParse(matinput));
+            }
+            matoutput.scrollTop = matoutput.scrollHeight;
+            //replace parenparse with some var
+            
+
+            }
+      }
+
+
+        //round to 10 thousandths, count characters in every entry, right-justify
 
       function newMatrix(event) {
           row = parseInt(document.getElementById("row").value, 10);
@@ -93,8 +729,8 @@
           var matrix = document.getElementById("matrix");
           matrix.innerHTML = "<br />";
 
-          for (i=1; i < row+1; i++){
-            for (j=1; j < col+1; j++){
+          for (i=0; i < row; i++){
+            for (j=0; j < col; j++){
               var trash = document.getElementById("r"+i+"c"+j);
 
               if ( trash ){
@@ -103,12 +739,11 @@
             }
           }
 
-          for (i = 1; i < row+1; i++){
+          for (i = 0; i < row; i++){
             var linebreak = document.createElement("br");
 
-            for (j = 1; j < col+1; j++){
+            for (j = 0; j < col; j++){
                 var entry = document.createElement("input");
-                entry.maxLength = "4";
                 entry.size = "1";
                 matrix.appendChild(entry);
                 entry.id = "r" + i + "c" + j;
@@ -127,8 +762,6 @@
           
           matrix.appendChild(linebreak);
           matrix.appendChild(save);
-
-          document.getElementById("r"+1+"c"+2).value = "fart";
       }
   </script>
   <meta charset="utf-8">

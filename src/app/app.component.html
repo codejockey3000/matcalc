@@ -14,7 +14,7 @@
   <strong>Matrices</strong>
   <br />
 </div>
-<div class="boxed" style="float: left">
+<div class="boxed" style="float: left; width: 400px; height: 400px">
   <div>
       <input id = "row" type = "text" maxlength="4" size="1">
       by
@@ -27,16 +27,14 @@
           </div>
       </div>
   </div>
-    <div>
-        <br />
-        <input id = "stuff" size="10">
-        <br />
-        <button id = "calc" onlick = "displayCalc()"> Calculate </button>
-    </div>
 </div>
 </div>
 
-<div style="float: left" id="business" class="boxed">
+<div style="float: left" id="business" style="position: absolute; left: 700px; width: 786px; height: 400px" class="boxed">
+    <textarea id = "matoutput" style="width: 100%; height: 370px; resize: none" readonly="True" onload="helpMsg()">Type "help" for help.&#10;&#13;&#10;&#13;</textarea>
+    <input id = "matinput" style="width: 742px">
+    <button id = "calc" onclick = "displayCalc()" style="width:40px"> GO </button>
 </div>
+<div style="position:absolute; left:710px; top:540px; width: 786px"> MATCALC Version 0.1 </div>
 
 <router-outlet></router-outlet>
